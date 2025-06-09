@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-registry
+  template:
+    metadata:
+      labels:
+        app: mcp-registry
+    spec:
+      containers:
+        - name: mcp-registry
+          image: quay.io/ecosystem-appeng/mcp-registry:amd64-0.1
+          ports:
+            - containerPort: 8000
+          env:
+            - name: PORT
+              value: "8000"
+            - name: MCP_REGISTRY_NAME
+              value: "foo"
+            - name: MCP_CATALOG_NAME
+              value: "red-hat-ecosystem-mcp-catalog"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-registry
+spec:
+  selector:
+    app: mcp-registry
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
