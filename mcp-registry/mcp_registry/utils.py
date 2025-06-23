@@ -6,7 +6,7 @@ from enum import Enum
 from fastapi import HTTPException
 
 from kubernetes import client, config
-from mcp_registry.defaults import MCP_GROUP, MCP_VERSION
+from mcp_registry.defaults import MCP_GROUP, MCP_REGISTRY_PLURALS, MCP_VERSION
 
 logger = logging.getLogger("uvicorn.error")
 logger.setLevel(logging.INFO)
@@ -21,12 +21,13 @@ def get_k8s_client():
     return client.CustomObjectsApi()
 
 
-async def get_registry(crd_api, catalog_name: str, registry_name: str):
+async def get_registry(crd_api, registry_name: str):
     resources = crd_api.list_namespaced_custom_object(
         group=MCP_GROUP,
         version=MCP_VERSION,
         namespace=get_current_namespace(),
-        plural="mcpregistries",
+        name=registry_name,
+        plural=MCP_REGISTRY_PLURALS,
     )
     matches = [
         r for r in resources.get("items", []) if r["metadata"]["name"] == registry_name
@@ -77,26 +78,26 @@ def sanitize_k8s_name(
     return s
 
 
-def match_registry(
-    registry_name: str,
+def match_serverpool(
+    serverpool_name: str,
     server_namespace: str,
-    registry_ref: dict,
+    serverpool_ref: dict,
 ) -> bool:
-    if registry_ref.get("name") == registry_name:
-        registry_namespace = registry_ref.get("namespace", get_current_namespace())
+    if serverpool_ref.get("name") == serverpool_name:
+        registry_namespace = serverpool_ref.get("namespace", get_current_namespace())
         if registry_namespace == server_namespace:
             return True
     return False
 
 
-def match_catalog(
-    catalog_name: str,
+def match_registry(
+    registry_name: str,
     blueprint_namespace: str,
-    catalog_ref: dict,
+    registry_ref: dict,
 ) -> bool:
-    if catalog_ref.get("name") == catalog_name:
-        catalog_namespace = catalog_ref.get("namespace", get_current_namespace())
-        if catalog_namespace == blueprint_namespace:
+    if registry_ref.get("name") == registry_name:
+        registry_namespace = registry_ref.get("namespace", get_current_namespace())
+        if registry_namespace == blueprint_namespace:
             return True
     return False
 
