@@ -9,12 +9,12 @@ from mcp_registry.utils import get_k8s_client, logger
 
 app = FastAPI()
 crd_api = get_k8s_client()
-catalog_name = os.getenv("MCP_CATALOG_NAME", None)
+catalog_name = os.getenv("MCP_REGISTRY_NAME", None)
 if not catalog_name:
-    raise ValueError("Environment variable 'MCP_CATALOG_NAME' is not set.")
-registry_name = os.getenv("MCP_REGISTRY_NAME", None)
-if not registry_name:
     raise ValueError("Environment variable 'MCP_REGISTRY_NAME' is not set.")
+registry_name = os.getenv("MCP_SERVERPOOL_NAME", None)
+if not registry_name:
+    raise ValueError("Environment variable 'MCP_SERVERPOOL_NAME' is not set.")
 
 logger.info(
     f"Starting MCP Registry with catalog_name: {catalog_name}, registry_name: {registry_name}"

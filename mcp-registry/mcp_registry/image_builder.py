@@ -42,7 +42,7 @@ class ImageBuilder:
             package_name = packages[0].get("name")
             version = packages[0].get("version", "latest")
             command_def = CommandDef("npx", version)
-            command_def.add_args(["-y", f"{package_name}@{version}"])
+            command_def.add_args(["-y", f"{package_name}"])
 
             package_arguments = packages[0].get("package_arguments", [])
             for arg in package_arguments:

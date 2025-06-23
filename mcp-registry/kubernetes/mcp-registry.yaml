@@ -21,9 +21,9 @@ spec:
           env:
             - name: PORT
               value: "8000"
-            - name: MCP_REGISTRY_NAME
+            - name: MCP_SERVERPOOL_NAME
               value: "foo"
-            - name: MCP_CATALOG_NAME
+            - name: MCP_REGISTRY_NAME
               value: "red-hat-ecosystem-mcp-catalog"
 ---
 apiVersion: v1

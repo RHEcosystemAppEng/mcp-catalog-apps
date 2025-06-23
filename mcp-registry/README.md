@@ -8,7 +8,7 @@ The `mcp-registry` is a FastAPI application designed to manage and interact with
 - Create and register a new server to the registry.
 - Unregister an existing server from the registry.
 
-The MCP Registy is defined by the env variable `MCP_REGISTRY_NAME` that must be set before launching the server.
+The MCP Server Pool is defined by the env variable `MCP_SERVERPOOL_NAME` that must be set before launching the server.
 
 The application assumes that the registry exists in the same namespace as where this application runs. 
 
@@ -27,13 +27,13 @@ This will install all the required dependencies listed in the `pyproject.toml` f
 To run the FastAPI application, use the following command:
 
 ```bash
-# Catalog service
-MCP_REGISTRY_NAME=foo MCP_CATALOG_NAME=red-hat-ecosystem-mcp-catalog uv run uvicorn mcp_registry.app:app --host 0.0.0.0 --port 8000
+# Registry service
+MCP_SERVERPOOL_NAME=foo MCP_REGISTRY_NAME=red-hat-ecosystem-mcp-catalog uv run uvicorn mcp_registry.app:app --host 0.0.0.0 --port 8000
 ```
 
 ```bash
-# Registry service
-MCP_REGISTRY_NAME=demo-registry MCP_CATALOG_NAME=red-hat-ecosystem-mcp-catalog uv run uvicorn mcp_registry.app:app --host 0.0.0.0 --port 8008
+# Server Pool service
+MCP_SERVERPOOL_NAME=demo-registry MCP_REGISTRY_NAME=red-hat-ecosystem-mcp-catalog uv run uvicorn mcp_registry.app:app --host 0.0.0.0 --port 8008
 ```
 
 You can then access the API at `http://localhost:8000`. E.g.:
@@ -68,8 +68,8 @@ podman build --platform linux/amd64 -t quay.io/ecosystem-appeng/mcp-registry:amd
 ```
 podman run --rm -it -p 8000:8000 \
   -v ~/.kube:/opt/app-root/src/.kube \
-  -e MCP_REGISTRY_NAME=my-registry \
-  -e MCP_CATALOG_NAME=my-catalog \
+  -e MCP_SERVERPOOL_NAME=my-registry \
+  -e MCP_REGISTRY_NAME=my-catalog \
   quay.io/ecosystem-appeng/mcp-registry:0.1
 ```
 
