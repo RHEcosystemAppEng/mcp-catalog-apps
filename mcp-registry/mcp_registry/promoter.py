@@ -1,9 +1,9 @@
 from kubernetes import client
 from mcp_registry.command_def import CommandDef
 from mcp_registry.defaults import (
-    MCP_BLUEPRINT_KIND,
     MCP_BLUEPRINT_PLURALS,
     MCP_GROUP,
+    MCP_SERVER_KIND,
     MCP_VERSION,
 )
 from mcp_registry.image_builder import ImageBuilder
@@ -11,9 +11,9 @@ from mcp_registry.utils import get_current_namespace, logger
 
 
 class Promoter:
-    def __init__(self, crd_api, catalog_name: str, server_definition: dict):
+    def __init__(self, crd_api, registry_name: str, server_definition: dict):
         self.crd_api = crd_api
-        self.catalog_name = catalog_name
+        self.registry_name = registry_name
         self.server_definition = server_definition
         self.server_definition_name = server_definition.get("metadata", {}).get("name")
         self.image_builder = ImageBuilder(
@@ -61,20 +61,21 @@ class Promoter:
 
         mcp_blueprint = {
             "apiVersion": f"{MCP_GROUP}/{MCP_VERSION}",
-            "kind": MCP_BLUEPRINT_KIND,
+            "kind": MCP_SERVER_KIND,
             "metadata": {
                 "generateName": blueprint_name,
                 "annotations": {
-                    "mcp.opendatahub.io/mcpcatalog": self.catalog_name,
+                    "mcp.opendatahub.io/mcpregistry": self.registry_name,
                 },
                 "labels": {
-                    "app.kubernetes.io/name": "mcp-catalog-operator",
-                    "app.kubernetes.io/managed-by": self.catalog_name,
+                    "app.kubernetes.io/name": "mcp-registry-operator",
+                    "app.kubernetes.io/managed-by": self.registry_name,
                 },
             },
             "spec": {
-                "catalog-ref": {
-                    "name": self.catalog_name,
+                "registryRef": {
+                    "name": self.registry_name,
+                    "namespace": namespace,
                 },
                 "description": description,
                 "provider": provider,
@@ -101,7 +102,7 @@ class Promoter:
                 )
                 if existing_resource:
                     logger.info(
-                        f"{MCP_BLUEPRINT_KIND} '{blueprint_name}' already exists in {namespace}. Skipping creation."
+                        f"{MCP_SERVER_KIND} '{blueprint_name}' already exists in {namespace}. Skipping creation."
                     )
                     # TODO: should be updated instead
                     return
@@ -118,12 +119,12 @@ class Promoter:
                 plural=MCP_BLUEPRINT_PLURALS,
                 body=mcp_blueprint,
             )
-            logger.info(f"Successfully created {MCP_BLUEPRINT_KIND} '{blueprint_name}'")
+            logger.info(f"Successfully created {MCP_SERVER_KIND} '{blueprint_name}'")
         except client.ApiException as e:
             logger.exception(
-                f"Error creating {MCP_BLUEPRINT_KIND} '{blueprint_name}': {e}"
+                f"Error creating {MCP_SERVER_KIND} '{blueprint_name}': {e}"
             )
         except Exception as e:
             logger.exception(
-                f"An unexpected error occurred for {MCP_BLUEPRINT_KIND} '{blueprint_name}': {e}"
+                f"An unexpected error occurred for {MCP_SERVER_KIND} '{blueprint_name}': {e}"
             )

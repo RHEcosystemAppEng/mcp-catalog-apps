@@ -9,28 +9,28 @@ from mcp_registry.utils import get_k8s_client, logger
 
 app = FastAPI()
 crd_api = get_k8s_client()
-catalog_name = os.getenv("MCP_REGISTRY_NAME", None)
-if not catalog_name:
-    raise ValueError("Environment variable 'MCP_REGISTRY_NAME' is not set.")
-registry_name = os.getenv("MCP_SERVERPOOL_NAME", None)
+registry_name = os.getenv("MCP_REGISTRY_NAME", None)
 if not registry_name:
+    raise ValueError("Environment variable 'MCP_REGISTRY_NAME' is not set.")
+serverpool_name = os.getenv("MCP_SERVERPOOL_NAME", None)
+if not serverpool_name:
     raise ValueError("Environment variable 'MCP_SERVERPOOL_NAME' is not set.")
 
 logger.info(
-    f"Starting MCP Registry with catalog_name: {catalog_name}, registry_name: {registry_name}"
+    f"Starting MCP Registry with registry_name: {registry_name}, serverpool_name: {serverpool_name}"
 )
 
 finder = Finder(
     crd_api=crd_api,
-    catalog_name=catalog_name,
     registry_name=registry_name,
+    serverpool_name=serverpool_name,
 )
 
 
 @app.get("/serverdef")
 async def list_server_defs():
     """
-    List all server definitions in the MCP catalog.
+    List all server definitions in the MCP registry.
     Returns a list of server definitions with their metadata and specifications.
     """
     return finder.find_server_defs()
@@ -39,7 +39,7 @@ async def list_server_defs():
 @app.get("/blueprint")
 async def list_blueprints():
     """
-    List all blueprints in the MCP catalog.
+    List all blueprints in the MCP registry.
     Returns a list of blueprints with their metadata and specifications.
     """
     return finder.find_blueprints()
@@ -48,7 +48,7 @@ async def list_blueprints():
 @app.get("/server")
 async def list_servers():
     """
-    List all MCP servers in the catalog.
+    List all MCP servers in the registry.
     Returns a list of servers with their metadata and specifications.
     """
     return finder.find_servers()
@@ -61,11 +61,11 @@ async def import_mcp_server_definitions(
     """
     Import MCP server definitions from a given source URL.
     This endpoint fetches server definitions from the specified MCP registry source
-    and imports them into the MCP catalog.
+    and imports them into the MCP registry.
     """
     logger.info(f"Importing MCP server definitions from source: {mcp_registry_source}")
     importer = Importer(
-        crd_api, catalog_name=catalog_name, mcp_registry_source=mcp_registry_source
+        crd_api, registry=registry_name, mcp_registry_source=mcp_registry_source
     )
 
     while importer.has_next:
@@ -85,7 +85,7 @@ async def promote_server_definition(
     This endpoint triggers the build process for an MCPBlueprint based on the provided server name.
     """
     logger.info(
-        f"Promoting server definition: {server_definition_name} in catalog: {catalog_name}"
+        f"Promoting server definition: {server_definition_name} in registry: {registry_name}"
     )
 
     try:
@@ -96,7 +96,7 @@ async def promote_server_definition(
                 detail=f"Server definition '{server_definition_name}' not found.",
             )
         promoter = Promoter(
-            crd_api, catalog_name=catalog_name, server_definition=server_definition
+            crd_api, registry=registry_name, server_definition=server_definition
         )
         promoter.promote()
     except Exception as e:

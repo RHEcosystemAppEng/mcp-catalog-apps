@@ -11,9 +11,9 @@ from mcp_registry.utils import get_current_namespace, logger, sanitize_k8s_name
 
 
 class Importer:
-    def __init__(self, crd_api, catalog_name: str, mcp_registry_source: str):
+    def __init__(self, crd_api, registry_name: str, mcp_registry_source: str):
         self.crd_api = crd_api
-        self.catalog_name = catalog_name
+        self.registry_name = registry_name
         self.mcp_registry_source = mcp_registry_source
         self.cursor = None
         self.has_next = True
@@ -75,11 +75,11 @@ class Importer:
             "metadata": {
                 "name": server_def_name,
                 "annotations": {
-                    "mcp.opendatahub.io/mcpcatalog": self.catalog_name,
+                    "mcp.opendatahub.io/mcpregistry": self.registry_name,
                 },
                 "labels": {
-                    "app.kubernetes.io/name": "mcp-catalog-operator",
-                    "app.kubernetes.io/managed-by": self.catalog_name,
+                    "app.kubernetes.io/name": "mcp-registry-operator",
+                    "app.kubernetes.io/managed-by": self.registry_name,
                     "mcp.opendatahub.io/server-id": server_entry.get("id"),
                 },
             },
