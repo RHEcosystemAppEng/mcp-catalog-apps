@@ -92,12 +92,12 @@ def match_serverpool(
 
 def match_registry(
     registry_name: str,
-    blueprint_namespace: str,
+    server_namespace: str,
     registry_ref: dict,
 ) -> bool:
     if registry_ref.get("name") == registry_name:
         registry_namespace = registry_ref.get("namespace", get_current_namespace())
-        if registry_namespace == blueprint_namespace:
+        if registry_namespace == server_namespace:
             return True
     return False
 

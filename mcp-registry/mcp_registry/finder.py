@@ -17,7 +17,7 @@ from mcp_registry.utils import (
 
 class Finder:
     """
-    Finder class to interact with the MCP registry and retrieve server definitions and blueprints.
+    Finder class to interact with the MCP registry and retrieve servers and running servers.
     """
 
     def __init__(self, crd_api, registry_name: str, serverpool_name: str):
@@ -85,7 +85,7 @@ class Finder:
             )
         ]
 
-    def find_serverruns(self) -> list:
+    def find_server_runs(self) -> list:
         resources = self.crd_api.list_namespaced_custom_object(
             group=MCP_GROUP,
             version=MCP_VERSION,

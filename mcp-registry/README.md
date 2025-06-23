@@ -41,13 +41,13 @@ You can then access the API at `http://localhost:8000`. E.g.:
 ```bash
 curl -X GET localhost:8000/serverdef | jq
 ```
-* List blueprints:
-```bash
-curl -X GET localhost:8000/blueprint
-```
 * List servers:
 ```bash
 curl -X GET localhost:8000/server
+```
+* List running servers:
+```bash
+curl -X GET localhost:8000/serverrun
 ```
 
 * Import server definitions (TODO: ext URL)
@@ -56,8 +56,8 @@ curl -X POST localhost:8000/import
 ```
 
 ## API Endpoints
-- **GET /blueprint**: Retrieve a list of blueprints in the specified namespace (or the current namespace if it's not specified).
 - **GET /server**: Retrieve a list of servers in the specified namespace (or the current namespace if it's not specified).
+- **GET /serverrun**: Retrieve a list of running servers in the specified namespace (or the current namespace if it's not specified).
 
 # Container image
 ```

@@ -36,22 +36,22 @@ async def list_server_defs():
     return finder.find_server_defs()
 
 
-@app.get("/blueprint")
-async def list_blueprints():
-    """
-    List all blueprints in the MCP registry.
-    Returns a list of blueprints with their metadata and specifications.
-    """
-    return finder.find_blueprints()
-
-
 @app.get("/server")
 async def list_servers():
     """
-    List all MCP servers in the registry.
+    List all servers in the MCP registry.
     Returns a list of servers with their metadata and specifications.
     """
     return finder.find_servers()
+
+
+@app.get("/serverrun")
+async def list_server_runs():
+    """
+    List all MCP server runs in the registry.
+    Returns a list of server runs with their metadata and specifications.
+    """
+    return finder.find_server_runs()
 
 
 @app.post("/import")
@@ -65,7 +65,7 @@ async def import_mcp_server_definitions(
     """
     logger.info(f"Importing MCP server definitions from source: {mcp_registry_source}")
     importer = Importer(
-        crd_api, registry=registry_name, mcp_registry_source=mcp_registry_source
+        crd_api, registry_name=registry_name, mcp_registry_source=mcp_registry_source
     )
 
     while importer.has_next:
@@ -82,7 +82,7 @@ async def promote_server_definition(
 ):
     """
     Promote a server definition to build a server image.
-    This endpoint triggers the build process for an MCPBlueprint based on the provided server name.
+    This endpoint triggers the build process for an McpServer based on the provided server name.
     """
     logger.info(
         f"Promoting server definition: {server_definition_name} in registry: {registry_name}"
@@ -106,5 +106,5 @@ async def promote_server_definition(
 
 # Connect a given MCP Registry (by name)
 # List the managed MCP servers
-# Create and register a new MCP server from a blueprint, a given container or an external URL
+# Create and register a new McpServerRun from an McpServer, a given container or an external URL
 # Unregister a given server

@@ -1,9 +1,9 @@
 from kubernetes import client
 from mcp_registry.command_def import CommandDef
 from mcp_registry.defaults import (
-    MCP_BLUEPRINT_PLURALS,
     MCP_GROUP,
     MCP_SERVER_KIND,
+    MCP_SERVER_PLURALS,
     MCP_VERSION,
 )
 from mcp_registry.image_builder import ImageBuilder
@@ -22,7 +22,7 @@ class Promoter:
 
     def promote(self):
         """
-        Promote the given MCP server definition to an McbBlueprint instance
+        Promote the given MCP server definition to an McpServer instance
         """
         command_def, image_name = self.image_builder.build_server_image()
         logger.info(
@@ -32,10 +32,10 @@ class Promoter:
             logger.error("Failed to build server image. Promotion aborted.")
             return
 
-        return self._build_mcp_blueprint(command_def=command_def, image_name=image_name)
+        return self._build_mcp_server(command_def=command_def, image_name=image_name)
 
-    def _build_mcp_blueprint(self, command_def: CommandDef, image_name: str):
-        blueprint_name = f"{self.server_definition_name}-"
+    def _build_mcp_server(self, command_def: CommandDef, image_name: str):
+        server_name = f"{self.server_definition_name}-"
         namespace = get_current_namespace()
         description = (
             self.server_definition.get("spec", {})
@@ -59,11 +59,11 @@ class Promoter:
         # TODO
         proxy = False
 
-        mcp_blueprint = {
+        mcp_server = {
             "apiVersion": f"{MCP_GROUP}/{MCP_VERSION}",
             "kind": MCP_SERVER_KIND,
             "metadata": {
-                "generateName": blueprint_name,
+                "generateName": server_name,
                 "annotations": {
                     "mcp.opendatahub.io/mcpregistry": self.registry_name,
                 },
@@ -96,13 +96,13 @@ class Promoter:
                 existing_resource = self.crd_api.get_namespaced_custom_object(
                     group=MCP_GROUP,
                     version=MCP_VERSION,
-                    name=blueprint_name,
+                    name=server_name,
                     namespace=namespace,
-                    plural=MCP_BLUEPRINT_PLURALS,
+                    plural=MCP_SERVER_PLURALS,
                 )
                 if existing_resource:
                     logger.info(
-                        f"{MCP_SERVER_KIND} '{blueprint_name}' already exists in {namespace}. Skipping creation."
+                        f"{MCP_SERVER_KIND} '{server_name}' already exists in {namespace}. Skipping creation."
                     )
                     # TODO: should be updated instead
                     return
@@ -116,15 +116,13 @@ class Promoter:
                 group=MCP_GROUP,
                 version=MCP_VERSION,
                 namespace=namespace,
-                plural=MCP_BLUEPRINT_PLURALS,
-                body=mcp_blueprint,
+                plural=MCP_SERVER_PLURALS,
+                body=mcp_server,
             )
-            logger.info(f"Successfully created {MCP_SERVER_KIND} '{blueprint_name}'")
+            logger.info(f"Successfully created {MCP_SERVER_KIND} '{server_name}'")
         except client.ApiException as e:
-            logger.exception(
-                f"Error creating {MCP_SERVER_KIND} '{blueprint_name}': {e}"
-            )
+            logger.exception(f"Error creating {MCP_SERVER_KIND} '{server_name}': {e}")
         except Exception as e:
             logger.exception(
-                f"An unexpected error occurred for {MCP_SERVER_KIND} '{blueprint_name}': {e}"
+                f"An unexpected error occurred for {MCP_SERVER_KIND} '{server_name}': {e}"
             )
