@@ -1,0 +1,67 @@
+[project]
+name = "mcpserver_importer"
+version = "0.1.0"
+description = "An application to import MCP Servers from an MCP Registry."
+authors = [{ name = "Daniele Martinoli", email = "dmartino@redhat.com" }]
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+    "fastapi>=0.100.0",
+    "starlette<0.47.0,>=0.40.0",
+    "uvicorn>=0.22.0",
+    "kubernetes>=26.1.0",
+    "pyyaml>=6.0",
+    "ruff",
+    "isort",
+    "mypy"
+]
+
+[project.scripts]
+mcpserver-importer = "importer.importer:main"
+
+[tool.setuptools]
+packages = ["importer"]
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88 # Common choice (Black's default)
+include = ["*.py", "*.pyi"]
+
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    "venv",
+    ".venv", # Common virtual environment names
+    "env",
+    "*.egg-info",
+    ".ruff_cache", # Ruff's own cache directory
+]
+
+
+[lint]
+select = [
+    "E",  # Pycodestyle errors
+    "F",  # Pyflakes
+    "I",  # isort (import sorting)
+    "W",  # Pycodestyle warnings
+    "C90", # Complexity (McCabe)
+    "N",  # Naming conventions
+]
+ignore = []
+
+[tool.ruff.lint.isort]
+force-single-line = false
+known-first-party = ["importer"]
+# section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
