@@ -4,7 +4,7 @@ This directory contains GitHub Actions workflows for the mcp-catalog-apps monore
 
 ## Available Workflows
 
-### 1. Test Coverage - mcpserver_importer (`test-coverage.yml`)
+### 1. Test Coverage - mcpserver_importer (`mcpserver_importer-test-coverage.yml`)
 
 **Triggers:**
 - Push to `main` or `develop` branches (only when `mcpserver_importer/**` files change)
@@ -26,7 +26,7 @@ This directory contains GitHub Actions workflows for the mcp-catalog-apps monore
 3. Click "Run workflow"
 4. Optionally check "Run all tests" for additional test execution
 
-### 2. Run Tests - mcpserver_importer (`test.yml`)
+### 2. Run Tests - mcpserver_importer (`mcpserver_importer-test.yml`)
 
 **Triggers:**
 - Push to `main` or `develop` branches (only when `mcpserver_importer/**` files change)
@@ -75,6 +75,9 @@ This repository contains multiple projects:
 ```
 mcp-catalog-apps/
 ├── .github/workflows/          # GitHub Actions workflows
+│   ├── mcpserver_importer-test-coverage.yml
+│   ├── mcpserver_importer-test.yml
+│   └── README.md
 ├── mcpserver_importer/         # MCP Server Importer project
 ├── mcp-registry/              # MCP Registry project
 ├── mcp-proxy/                 # MCP Proxy project
@@ -140,8 +143,14 @@ The workflows use the following GitHub Actions:
 
 To add workflows for other projects in the monorepo:
 
-1. Create a new workflow file in `.github/workflows/`
+1. Create a new workflow file in `.github/workflows/` with the naming pattern: `{project-name}-{workflow-type}.yml`
 2. Use the same structure as the mcpserver_importer workflows
 3. Update the path filtering to match your project directory
 4. Update cache keys and artifact names to be project-specific
-5. Update the workflow name to include the project name 
+5. Update the workflow name to include the project name
+
+**Example naming convention:**
+- `mcp-registry-test.yml`
+- `mcp-registry-test-coverage.yml`
+- `policy-handler-test.yml`
+- `policy-handler-test-coverage.yml` 
