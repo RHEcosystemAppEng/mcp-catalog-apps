@@ -124,7 +124,7 @@ class Importer:
     def _name_match(self, server_entry: dict) -> bool:
         if not self.name_filter:
             return True
-        return self.name_filter in server_entry.get("name", "")
+        return self.name_filter.lower() in server_entry.get("name", "").lower()
 
     def _import_server_entry(self, server_entry):
         id = server_entry.get("id")
