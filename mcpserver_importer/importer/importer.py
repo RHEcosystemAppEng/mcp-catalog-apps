@@ -1,7 +1,6 @@
 import logging
 import os
 import sys
-import time
 import uuid
 from datetime import datetime
 
@@ -18,6 +17,7 @@ from importer.defaults import (
 from importer.utils import get_current_namespace, get_k8s_client, sanitize_k8s_name
 
 logger = logging.getLogger("importer")
+
 
 class Importer:
     def __init__(
@@ -42,14 +42,14 @@ class Importer:
         self.has_next = True
         self.namespace = namespace
         self.dry_run = dry_run
-        
+
         # Tracking for ConfigMap generation
         self.start_time = datetime.now()
         self.server_tracking = []
         self.import_status = "running"
         self.error_message: str | None = None
         self.imported_count = 0
-        
+
         logger.info("=" * 80)
         logger.info("🚀 MCP SERVER IMPORTER INITIALIZATION")
         logger.info("=" * 80)
@@ -83,7 +83,9 @@ class Importer:
             self.has_next = False
             self.cursor = None
             self.import_status = "failed"
-            self.error_message = "Invalid registry response format: missing 'servers' list"
+            self.error_message = (
+                "Invalid registry response format: missing 'servers' list"
+            )
             return
 
         self.cursor = server_data.get("metadata", {}).get("next_cursor", None)
@@ -95,20 +97,22 @@ class Importer:
                 logger.debug(f"Skipping server: {server_entry.get('name', '')}")
                 # Not tracking server if it is filtered out by name filter
                 continue
-            
+
             # Track server before processing
-            server_id = server_entry.get('id', '')
-            server_name = server_entry.get('name', '')
+            server_id = server_entry.get("id", "")
+            server_name = server_entry.get("name", "")
             mcpserver_name = sanitize_k8s_name(server_name)
-            
-            self.server_tracking.append({
-                'id': server_id,
-                'name': server_name,
-                'mcpserver_name': mcpserver_name,
-                'skipped': False,
-                'reason': None
-            })
-            
+
+            self.server_tracking.append(
+                {
+                    "id": server_id,
+                    "name": server_name,
+                    "mcpserver_name": mcpserver_name,
+                    "skipped": False,
+                    "reason": None,
+                }
+            )
+
             self._import_server_entry(server_entry)
             self.imported_servers += 1
             if self.max_servers > 0 and self.imported_servers >= self.max_servers:
@@ -181,9 +185,9 @@ class Importer:
                     )
                     # Update tracking to mark as skipped
                     for server in self.server_tracking:
-                        if server['mcpserver_name'] == server_def_name:
-                            server['skipped'] = True
-                            server['reason'] = 'already_exists'
+                        if server["mcpserver_name"] == server_def_name:
+                            server["skipped"] = True
+                            server["reason"] = "already_exists"
                             break
                     return
             except client.ApiException as e:
@@ -193,7 +197,9 @@ class Importer:
                     raise
 
             if self.dry_run:
-                logger.info(f"Dry run mode enabled. Would have created McpServerDefinition: {server_def_name}")
+                logger.info(
+                    f"Dry run mode enabled. Would have created McpServerDefinition: {server_def_name}"
+                )
                 return
 
             self.crd_api.create_namespaced_custom_object(
@@ -206,63 +212,67 @@ class Importer:
             logger.info(f"Successfully created McpServerDefinition: {server_def_name}")
             # Update tracking to mark as successfully imported
             for server in self.server_tracking:
-                if server['mcpserver_name'] == server_def_name:
-                    server['skipped'] = False
-                    server['reason'] = None
+                if server["mcpserver_name"] == server_def_name:
+                    server["skipped"] = False
+                    server["reason"] = None
                     self.imported_count += 1
                     break
         except client.ApiException as e:
             logger.error(f"Error creating McpServerDefinition '{server_def_name}': {e}")
             # Update tracking to mark as failed
             for server in self.server_tracking:
-                if server['mcpserver_name'] == server_def_name:
-                    server['skipped'] = True
-                    server['reason'] = 'api_error'
+                if server["mcpserver_name"] == server_def_name:
+                    server["skipped"] = True
+                    server["reason"] = "api_error"
                     break
         except Exception as e:
             logger.error(f"An unexpected error occurred for '{server_def_name}': {e}")
             # Update tracking to mark as failed
             for server in self.server_tracking:
-                if server['mcpserver_name'] == server_def_name:
-                    server['skipped'] = True
-                    server['reason'] = 'unexpected_error'
+                if server["mcpserver_name"] == server_def_name:
+                    server["skipped"] = True
+                    server["reason"] = "unexpected_error"
                     break
 
     def generate_configmap(self):
         """Generate and create a ConfigMap with execution details."""
         end_time = datetime.now()
         duration_sec = (end_time - self.start_time).total_seconds()
-        
+
         # Prepare execution data
         execution_data = {
-            'catalog_name': self.catalog_name,
-            'registry_uri': self.mcp_registry_url,
-            'importjob_name': self.import_job_name,
-            'timestamp': self.start_time.isoformat(),
-            'duration_sec': duration_sec,
-            'max_servers': self.max_servers,
-            'name_filter': self.name_filter or None,
-            'status': self.import_status,
-            'error': self.error_message,
-            'imported_count': self.imported_count,
-            'imported_servers': []
+            "catalog_name": self.catalog_name,
+            "registry_uri": self.mcp_registry_url,
+            "importjob_name": self.import_job_name,
+            "timestamp": self.start_time.isoformat(),
+            "duration_sec": duration_sec,
+            "max_servers": self.max_servers,
+            "name_filter": self.name_filter or None,
+            "status": self.import_status,
+            "error": self.error_message,
+            "imported_count": self.imported_count,
+            "imported_servers": [],
         }
-        
+
         # Add server tracking information
         for server in self.server_tracking:
-            execution_data['imported_servers'].append({
-                'id': server['id'],
-                'name': server['mcpserver_name'],
-                'skipped': server['skipped'],
-                'reason': server['reason']
-            })
-        
+            execution_data["imported_servers"].append(
+                {
+                    "id": server["id"],
+                    "name": server["mcpserver_name"],
+                    "skipped": server["skipped"],
+                    "reason": server["reason"],
+                }
+            )
+
         # Generate YAML
-        execution_yaml = yaml.dump(execution_data, default_flow_style=False, sort_keys=False)
-        
+        execution_yaml = yaml.dump(
+            execution_data, default_flow_style=False, sort_keys=False
+        )
+
         # Generate random ConfigMap name
         configmap_name = f"mcp-import-{uuid.uuid4().hex[:8]}"
-        
+
         # Create ConfigMap
         configmap = {
             "apiVersion": "v1",
@@ -273,18 +283,17 @@ class Importer:
                 "labels": {
                     "app.kubernetes.io/name": "mcp-registry-operator",
                     "app.kubernetes.io/managed-by": self.catalog_name,
-                    "mcp.opendatahub.io/mcpserverimportjob": self.import_job_name,                    "mcp.opendatahub.io/import-job": self.import_job_name,
+                    "mcp.opendatahub.io/mcpserverimportjob": self.import_job_name,
+                    "mcp.opendatahub.io/import-job": self.import_job_name,
                     "mcp.opendatahub.io/mcpcatalog": self.catalog_name,
                 },
                 "annotations": {
                     "mcp.opendatahub.io/registry": self.mcp_registry_url,
-                }
+                },
             },
-            "data": {
-                "execution.yaml": execution_yaml
-            }
+            "data": {"execution.yaml": execution_yaml},
         }
-        
+
         try:
             if self.dry_run:
                 logger.info("=" * 80)
@@ -294,28 +303,31 @@ class Importer:
                 logger.info(f"Execution YAML:\n{execution_yaml}")
                 logger.info("=" * 80)
                 return configmap_name
-            
+
             # Create the ConfigMap
             core_v1_api = client.CoreV1Api()
             namespace = self.namespace or get_current_namespace()
-            
+
             core_v1_api.create_namespaced_config_map(
-                namespace=namespace,
-                body=configmap
+                namespace=namespace, body=configmap
             )
-            
+
             logger.info("=" * 80)
             logger.info("📋 CONFIGMAP GENERATION COMPLETE")
             logger.info("=" * 80)
             logger.info(f"✅ ConfigMap created: {configmap_name}")
             logger.info(f"📊 Total servers processed: {len(self.server_tracking)}")
-            logger.info(f"✅ Successfully imported: {len([s for s in self.server_tracking if not s['skipped']])}")
-            logger.info(f"⏭️  Skipped: {len([s for s in self.server_tracking if s['skipped']])}")
+            logger.info(
+                f"✅ Successfully imported: {len([s for s in self.server_tracking if not s['skipped']])}"
+            )
+            logger.info(
+                f"⏭️  Skipped: {len([s for s in self.server_tracking if s['skipped']])}"
+            )
             logger.info(f"⏱️  Duration: {duration_sec:.2f} seconds")
             logger.info("=" * 80)
-            
+
             return configmap_name
-            
+
         except Exception as e:
             logger.error(f"Failed to create ConfigMap: {e}")
             return None
@@ -326,12 +338,10 @@ def main():
     # Configure logging to output to terminal
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(sys.stdout)
-        ]
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)],
     )
-    
+
     crd_api = get_k8s_client()
     catalog_name = os.getenv("CATALOG_NAME", "")
     if not catalog_name:
@@ -342,7 +352,7 @@ def main():
     importjob_name = os.getenv("IMPORT_JOB_NAME", "")
     if not importjob_name:
         raise ValueError("Environment variable 'IMPORT_JOB_NAME' is not set.")
-    
+
     # Get optional environment variables
     name_filter = os.getenv("NAME_FILTER", "")
     max_servers = int(os.getenv("MAX_SERVERS", "10"))
@@ -351,16 +361,16 @@ def main():
     level = os.getenv("LOG_LEVEL", "INFO")
     logger.setLevel(level)
     importer = Importer(
-        crd_api, 
-        catalog_name, 
-        importjob_name, 
+        crd_api,
+        catalog_name,
+        importjob_name,
         registry_url,
         name_filter=name_filter,
         max_servers=max_servers,
         namespace=namespace,
-        dry_run=dry_run
+        dry_run=dry_run,
     )
-    
+
     try:
         while importer.has_next:
             try:
@@ -369,18 +379,18 @@ def main():
                 importer.import_status = "failed"
                 importer.error_message = str(e)
                 raise Exception(f"Error during import: {e}")
-        
+
         # Set success status only if no errors occurred
         if importer.import_status == "running":
             importer.import_status = "completed"
-        
+
         # Generate ConfigMap at the end
         configmap_name = importer.generate_configmap()
         if configmap_name:
             logger.info(f"📋 Execution summary saved to ConfigMap: {configmap_name}")
         else:
             logger.warning("⚠️  Failed to create ConfigMap with execution summary")
-            
+
     except Exception as e:
         logger.error(f"❌ Import process failed: {e}")
         # Set failed status
@@ -390,7 +400,9 @@ def main():
         try:
             configmap_name = importer.generate_configmap()
             if configmap_name:
-                logger.info(f"📋 Partial execution summary saved to ConfigMap: {configmap_name}")
+                logger.info(
+                    f"📋 Partial execution summary saved to ConfigMap: {configmap_name}"
+                )
         except Exception as cm_error:
             logger.error(f"❌ Failed to create ConfigMap: {cm_error}")
         raise
