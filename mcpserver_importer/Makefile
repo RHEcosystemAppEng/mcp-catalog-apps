@@ -13,7 +13,7 @@ test: lint
 	uv run pytest tests/ -v
 
 test-coverage: test
-	uv run pytest tests/ --cov=importer --cov-report=html --cov-report=term-missing
+	uv run pytest tests/ --cov=importer --cov-report=html --cov-report=xml --cov-report=term-missing
 
 test-unit:
 	uv run pytest tests/ -m unit -v

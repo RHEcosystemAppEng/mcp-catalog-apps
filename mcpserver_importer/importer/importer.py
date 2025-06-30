@@ -284,7 +284,6 @@ class Importer:
                     "app.kubernetes.io/name": "mcp-registry-operator",
                     "app.kubernetes.io/managed-by": self.catalog_name,
                     "mcp.opendatahub.io/mcpserverimportjob": self.import_job_name,
-                    "mcp.opendatahub.io/import-job": self.import_job_name,
                     "mcp.opendatahub.io/mcpcatalog": self.catalog_name,
                 },
                 "annotations": {
