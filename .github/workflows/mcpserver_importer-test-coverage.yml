@@ -90,7 +90,9 @@ jobs:
         path: |
           mcpserver_importer/htmlcov/
           mcpserver_importer/.pytest_cache/
+          mcpserver_importer/coverage.xml
         retention-days: 30
+        if-no-files-found: warn
 
     - name: Comment PR with coverage results
       if: github.event_name == 'pull_request'

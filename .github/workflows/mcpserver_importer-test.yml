@@ -66,4 +66,7 @@ jobs:
         name: test-results-mcpserver_importer-${{ matrix.python-version }}
         path: |
           mcpserver_importer/.pytest_cache/
-        retention-days: 7 
+          mcpserver_importer/htmlcov/
+          mcpserver_importer/coverage.xml
+        retention-days: 7
+        if-no-files-found: warn 
