@@ -1,0 +1,69 @@
+name: Run Tests - mcpserver_importer
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'mcpserver_importer/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'mcpserver_importer/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - name: Cache uv dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          mcpserver_importer/.venv
+          mcpserver_importer/.uv/cache
+        key: ${{ runner.os }}-uv-mcpserver_importer-${{ hashFiles('mcpserver_importer/uv.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-uv-mcpserver_importer-
+
+    - name: Install dependencies
+      run: |
+        cd mcpserver_importer
+        uv sync --extra test
+
+    - name: Run linting
+      run: |
+        cd mcpserver_importer
+        uv run make lint
+
+    - name: Run tests
+      run: |
+        cd mcpserver_importer
+        uv run make test
+      env:
+        PYTHONPATH: ${{ github.workspace }}/mcpserver_importer
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-mcpserver_importer-${{ matrix.python-version }}
+        path: |
+          mcpserver_importer/.pytest_cache/
+        retention-days: 7 
