@@ -21,7 +21,8 @@ ENV PATH="/opt/app-root/src/.venv/bin:$PATH"
 
 ENV PORT=8000
 
-ENV MCP_SERVERPOOL_NAME=""
+ENV MCP_CATALOG_NAME=""
 ENV MCP_REGISTRY_NAME=""
+ENV MCP_IMPORT_JOB_NAME=""
 
 ENTRYPOINT ["uvicorn", "mcp_registry.app:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,13 +1,14 @@
 MCP_GROUP = "mcp.opendatahub.io"
-MCP_VERSION = "v1"
+MCP_VERSION = "v1alpha1"
 
-MCP_REGISTRY_PLURALS = "mcpregistries"
-MCP_SERVER_DEFINITION_KIND = "McpServerDefinition"
-MCP_SERVER_DEFINITION_PLURALS = "mcpserverdefinitions"
+MCP_CATALOG_PLURALS = "mcpcatalogs"
+
 MCP_SERVER_KIND = "McpServer"
 MCP_SERVER_PLURALS = "mcpservers"
+MCP_CERTIFIED_SERVER_KIND = "McpCertifiedServer"
+MCP_CERTIFIED_SERVER_PLURALS = "mcpcertifiedservers"
 
-MCP_SERVERPOOL_PLURALS = "mcpserverpools"
+MCP_REGISTRY_PLURALS = "mcpserverpools"
 MCP_SERVERRUN_KIND = "McpServerRun"
 MCP_SERVERRUN_PLURALS = "mcpserverruns"
 
