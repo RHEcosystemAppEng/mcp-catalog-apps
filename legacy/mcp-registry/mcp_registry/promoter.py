@@ -1,8 +1,8 @@
 from kubernetes import client
 from mcp_registry.command_def import CommandDef
 from mcp_registry.defaults import (
+    MCP_CERTIFIED_SERVER_KIND,
     MCP_GROUP,
-    MCP_SERVER_KIND,
     MCP_SERVER_PLURALS,
     MCP_VERSION,
 )
@@ -11,9 +11,9 @@ from mcp_registry.utils import get_current_namespace, logger
 
 
 class Promoter:
-    def __init__(self, crd_api, registry_name: str, server_definition: dict):
+    def __init__(self, crd_api, catalog_name: str, server_definition: dict):
         self.crd_api = crd_api
-        self.registry_name = registry_name
+        self.catalog_name = catalog_name
         self.server_definition = server_definition
         self.server_definition_name = server_definition.get("metadata", {}).get("name")
         self.image_builder = ImageBuilder(
@@ -61,22 +61,18 @@ class Promoter:
 
         mcp_server = {
             "apiVersion": f"{MCP_GROUP}/{MCP_VERSION}",
-            "kind": MCP_SERVER_KIND,
+            "kind": MCP_CERTIFIED_SERVER_KIND,
             "metadata": {
                 "generateName": server_name,
                 "annotations": {
-                    "mcp.opendatahub.io/mcpregistry": self.registry_name,
+                    "mcp.opendatahub.io/mcpcatalog": self.catalog_name,
                 },
                 "labels": {
                     "app.kubernetes.io/name": "mcp-registry-operator",
-                    "app.kubernetes.io/managed-by": self.registry_name,
+                    "app.kubernetes.io/managed-by": self.catalog_name,
                 },
             },
             "spec": {
-                "registryRef": {
-                    "name": self.registry_name,
-                    "namespace": namespace,
-                },
                 "description": description,
                 "provider": provider,
                 "license": license,
@@ -102,7 +98,7 @@ class Promoter:
                 )
                 if existing_resource:
                     logger.info(
-                        f"{MCP_SERVER_KIND} '{server_name}' already exists in {namespace}. Skipping creation."
+                        f"{MCP_CERTIFIED_SERVER_KIND} '{server_name}' already exists in {namespace}. Skipping creation."
                     )
                     # TODO: should be updated instead
                     return
@@ -119,10 +115,14 @@ class Promoter:
                 plural=MCP_SERVER_PLURALS,
                 body=mcp_server,
             )
-            logger.info(f"Successfully created {MCP_SERVER_KIND} '{server_name}'")
+            logger.info(
+                f"Successfully created {MCP_CERTIFIED_SERVER_KIND} '{server_name}'"
+            )
         except client.ApiException as e:
-            logger.exception(f"Error creating {MCP_SERVER_KIND} '{server_name}': {e}")
+            logger.exception(
+                f"Error creating {MCP_CERTIFIED_SERVER_KIND} '{server_name}': {e}"
+            )
         except Exception as e:
             logger.exception(
-                f"An unexpected error occurred for {MCP_SERVER_KIND} '{server_name}': {e}"
+                f"An unexpected error occurred for {MCP_CERTIFIED_SERVER_KIND} '{server_name}': {e}"
             )

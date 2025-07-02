@@ -1,8 +1,8 @@
 from kubernetes import client
 from mcp_registry.defaults import (
     MCP_GROUP,
-    MCP_SERVER_DEFINITION_KIND,
-    MCP_SERVER_DEFINITION_PLURALS,
+    MCP_CERTIFIED_SERVER_PLURALS,
+    MCP_SERVER_KIND,
     MCP_SERVER_PLURALS,
     MCP_SERVERRUN_PLURALS,
     MCP_VERSION,
@@ -20,24 +20,26 @@ class Finder:
     Finder class to interact with the MCP registry and retrieve servers and running servers.
     """
 
-    def __init__(self, crd_api, registry_name: str, serverpool_name: str):
+    def __init__(self, crd_api, catalog_name: str, registry_name: str):
         self.crd_api = crd_api
+        self.catalog_name = catalog_name
         self.registry_name = registry_name
-        self.serverpool_name = serverpool_name
         self.namespace = get_current_namespace()
 
-    def find_server_defs(self) -> list:
+    def find_servers(self) -> list:
         """
         Find server definitions in the MCP registry.
 
         Returns a list of server definitions with their metadata and specifications.
         """
+        logger.info(f"Finding servers in catalog: {self.catalog_name} from namespace: {self.namespace}")
         resources = self.crd_api.list_namespaced_custom_object(
             group=MCP_GROUP,
             version=MCP_VERSION,
             namespace=self.namespace,
-            plural=MCP_SERVER_DEFINITION_PLURALS,
+            plural=MCP_SERVER_PLURALS,
         )
+        logger.info(f"Found {len(resources.get('items', []))} servers in catalog: {self.catalog_name} from namespace: {self.namespace}")
         return [
             {
                 "name": item["metadata"]["name"],
@@ -55,7 +57,7 @@ class Finder:
             # TODO: Match registry using annotations
         ]
 
-    def find_servers(self) -> list:
+    def find_certified_servers(self) -> list:
         """
         Find servers in the MCP registry.
         Returns a list of servers with their metadata and specifications.
@@ -64,7 +66,7 @@ class Finder:
             group=MCP_GROUP,
             version=MCP_VERSION,
             namespace=self.namespace,
-            plural=MCP_SERVER_PLURALS,
+            plural=MCP_CERTIFIED_SERVER_PLURALS,
         )
         return [
             {
@@ -111,23 +113,23 @@ class Finder:
             )
         ]
 
-    def find_server_def(self, server_definition_name: str):
+    def find_server(self, server_definition_name: str):
         try:
             return self.crd_api.get_namespaced_custom_object(
                 group=MCP_GROUP,
                 version=MCP_VERSION,
                 name=server_definition_name,
                 namespace=self.namespace,
-                plural=MCP_SERVER_DEFINITION_PLURALS,
+                plural=MCP_SERVER_PLURALS,
             )
         except client.ApiException as e:
             if e.status == 404:
                 logger.warning(
-                    f"{MCP_SERVER_DEFINITION_KIND} '{server_definition_name}' not found."
+                    f"{MCP_SERVER_KIND} '{server_definition_name}' not found."
                 )
                 return None
             else:
                 logger.error(
-                    f"Error fetching {MCP_SERVER_DEFINITION_KIND} '{server_definition_name}': {e}"
+                    f"Error fetching {MCP_SERVER_KIND} '{server_definition_name}': {e}"
                 )
                 return None
